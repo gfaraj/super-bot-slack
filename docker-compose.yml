@@ -1,0 +1,15 @@
+version: '3.7'
+
+services:
+  super-bot-slack:
+    image: gfaraj/super-bot-slack:latest
+    build: .
+    hostname: superbotslack
+    env_file: 
+      - .env
+    environment:
+      NODE_ENV: production
+      SUPERBOT_URL: http://host.docker.internal:3000/message
+      CALLBACK_HOST: localhost
+    ports:
+      - 3002:3002

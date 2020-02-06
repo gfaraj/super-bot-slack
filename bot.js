@@ -11,10 +11,10 @@ const options = config.get('SlackClient');
 
 const controller = Botkit.slackbot({
     debug: false,
-    clientSigningSecret: process.env.clientSigningSecret
+    clientSigningSecret: process.env.CLIENT_SIGNING_SECRET
 });
 const bot = controller.spawn({
-    token: process.env.botToken
+    token: process.env.BOT_TOKEN
 });
 
 function startRTM() {
@@ -37,17 +37,16 @@ controller.on('rtm_close', () => {
     startRTM();
 });
 
-let callbackUrl = '';
+const callbackRoute = '/api/message';
+const callbackPort = process.env.CALLBACK_PORT || 3002;
+const callbackHost = process.env.CALLBACK_HOST || 'localhost';
+const callbackUrl = `http://${callbackHost}:${callbackPort}${callbackRoute}`;
 
 function startCallbackServer() {
-    const route = '/message';
-    const port = options.callback_url_port || 3001;
-    callbackUrl = `${options.callback_url_base}:${port}${route}`;
-
     const server = express();
     server.use(express.json({ limit: '20mb' }));
 
-    server.post(route, async (req, res) => {
+    server.post(callbackRoute, async (req, res) => {
         try {
             console.log(`Bot Sent: ${inspectMessage(req.body)}`);
 
@@ -58,7 +57,7 @@ function startCallbackServer() {
         }
     });
 
-    server.listen(port, () => {
+    server.listen(callbackPort, () => {
         console.log(`Listening on ${callbackUrl}...`);
     });
 }
@@ -67,11 +66,9 @@ startCallbackServer();
 
 const slackRequestAdapter = axios.create({
    headers: {
-       Authorization: `Bearer ${process.env.botToken}`
+       Authorization: `Bearer ${process.env.BOT_TOKEN}`
    }
 });
-
-const timeout = ms => new Promise(res => setTimeout(res, ms));
 
 function parse(str) {
     let pos = str.indexOf(' ');
@@ -206,12 +203,17 @@ let uniqueFileId = 0;
 
 async function saveFileToDisk(file) {
     return new Promise((resolve, reject) => {
-        let data = file.data.split(',')[1];
-        let fileName = require("path").join(
+        const data = file.data.split(',')[1];
+        const fileExtension = file.filetype || mime.extension(file.mimetype) || file.fileType || mime.extension(file.mimeType) || 'txt';
+        const fileName = require("path").join(
             process.cwd(), 
-            `./temp/slack-work-${uniqueFileId++}.${file.filetype || mime.extension(file.mimetype)}`
+            `./temp/slack-work-${uniqueFileId++}.${fileExtension}`
         );
         
+        if (!require("fs").existsSync('./temp')){
+            require("fs").mkdirSync('./temp');
+        }
+
         if (uniqueFileId > 10000) {
             uniqueFileId = 0;
         }
@@ -231,7 +233,7 @@ async function uploadFileAndPost(channel, file, text, source) {
 
     return new Promise((resolve, reject) => {
         let options = {
-            token: process.env.botToken,
+            token: process.env.BOT_TOKEN,
             filename: `file.${file.filetype || mime.extension(file.mimetype)}`,
             filetype: "auto",
             channels: channel,
@@ -278,7 +280,7 @@ async function sendFile(channel, file, text, source) {
 function retrieveParentMessage(message) {
     return new Promise((resolve, reject) => {
         bot.api.conversations.history({
-            token: process.env.userToken,
+            token: process.env.USER_TOKEN,
             channel: message.channel,
             latest: message.thread_ts,
             limit: 1,
@@ -298,7 +300,7 @@ function retrieveParentMessage(message) {
 function retrieveUserName(user) {
     return new Promise((resolve, reject) => {
         bot.api.users.info({
-            token: process.env.userToken,
+            token: process.env.USER_TOKEN,
             user
         }, (err, response) => {
             if (err) {
@@ -340,7 +342,7 @@ async function onMessageReceived(bot, message) {
             botMessage.callbackUrl = callbackUrl;
 
             console.log(`Sending to bot: ${inspectMessage(botMessage)}`);
-            let response = await axios.post(options.message_api_url, botMessage);
+            let response = await axios.post(process.env.SUPERBOT_URL, botMessage);
             
             if (response.status == 200) {
                 console.log(`Received back: ${inspectMessage(response.data)}`);
