@@ -10,7 +10,7 @@ You can run this app in a docker container by using:
 docker run gfaraj/super-bot-slack
 ```
 
-You will need to specify a couple of environment variables so that the discord client can successfully sign in as your bot user, and so that it knows where the [super-bot service](https://github.com/gfaraj/super-bot) is located:
+You will need to specify a couple of environment variables so that the Slack client can successfully sign in as your bot user, and so that it knows where the [super-bot service](https://github.com/gfaraj/super-bot) is located:
 
 ```
 docker run --env SUPERBOT_URL=http://MY_MACHINE:3000/message --env BOT_TOKEN=yourslackbottoken --env USER_TOKEN=yourslackusertoken --env CLIENT_SIGNING_SECRET=yourclientsecret gfaraj/super-bot-discord
