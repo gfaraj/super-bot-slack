@@ -48,4 +48,4 @@ npm run start
 
 ## Configuration
 
-The client uses a JSON configuration file located in the ./config folder. See the [config](https://docs.npmjs.com/cli/config) package documentation for more information. You will also need to provide environment variables called clientSigningSecret, botToken, and userToken either through the command-line or by creating an .env file. See the included .env.example file.
+The client uses a JSON configuration file located in the ./config folder. See the [config](https://docs.npmjs.com/cli/config) package documentation for more information. You will also need to provide environment variables called CLIENT_SIGNING_SECRET, BOT_TOKEN, and USER_TOKEN either through the command-line or by creating an .env file. See the included .env.example file.
