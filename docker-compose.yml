@@ -5,6 +5,7 @@ services:
     image: gfaraj/super-bot-slack:latest
     build: .
     hostname: superbotslack
+    restart: always
     env_file: 
       - .env
     environment:
