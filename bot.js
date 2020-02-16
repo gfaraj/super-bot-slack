@@ -318,7 +318,12 @@ async function onBotMessageReceived(message, source) {
     let text = message.text || '';
     if (message.error) {
         text = "Error: " + text;
-    }                    
+    }
+    
+    if (message.attachments && message.attachments.length > 0 && !message.attachment) {
+        message.attachment = message.attachments[0];
+    }
+
     if (message.attachment) {                        
         if (message.addressee) {
             text = `${message.addressee}: ` + text + '☝☝';
