@@ -1,6 +1,6 @@
 {
   "name": "botkit-super-bot",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "slack client for super-bot",
   "main": "bot.js",
   "scripts": {
